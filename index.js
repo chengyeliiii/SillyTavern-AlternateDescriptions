@@ -335,7 +335,7 @@ function updateFieldList(container, field, fieldData) {
         return `
             <div class="field-item ${activeClass}" data-item-index="${index}" style="margin-bottom: 15px;">
                 <div class="flex-container justifySpaceBetween">
-                    <div class="flex-container" style="width: 40%">
+                    <div class="flex-container field-title-group" style="width: 40%">
                         <input class="text_pole textarea_compact field-title margin0" data-index="${index}" value="${escapeHtml(entry.title)}" placeholder="${field.button_name}标题" maxlength="50">
                         <div class="active-indicator">${activeIndicator}</div>
                     </div>
