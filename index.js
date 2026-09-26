@@ -313,8 +313,6 @@ function openFieldEditor(textarea, field, title, trigger) {
     }, { once: true });
     document.body.appendChild(dialog);
     dialog.showModal();
-    editor.focus();
-    editor.setSelectionRange(textarea.selectionStart, textarea.selectionEnd);
 }
 
 // Update the descriptions list in the popup
@@ -358,7 +356,7 @@ function updateFieldList(container, field, fieldData) {
                 </div>
                 <textarea class="text_pole textarea_compact field-textarea" rows="8" data-index="${index}" placeholder="请输入${field.button_name}内容...">${escapeHtml(entry.content)}</textarea>
                 <div class="extension_token_counter" style="text-align: right; margin-top: 5px;">
-                    <span>词元数：</span> <span data-token-display="${index}">计算中...</span>
+                    <span>Token：</span> <span data-token-display="${index}">计算中...</span>
                 </div>
             </div>
         `;
@@ -534,7 +532,7 @@ function createPopupContent(field) {
     // Add event listener for "Add New" button with duplicate check
     container.querySelector(`#add-field-btn`).addEventListener('click', () => {
         currentFieldEntry = ContextUtil.getCurrentField(field);
-        fieldData.push({ title: `${field.button_name} #${fieldData.length + 1}`, content: currentFieldEntry || '' });
+        fieldData.push({ title: `${field.button_name} #${fieldData.length + 1}`, content: '' });
         saveFieldData(field, fieldData);
         updateFieldList(container, field, fieldData);
     });
