@@ -12,7 +12,7 @@ import { SlashCommandEnumValue, enumTypes } from '../../../slash-commands/SlashC
 const fieldConfigs = [
     {
         field: 'description',
-        button_name: 'Descriptions',
+        button_name: '角色描述',
         selector: '#description_div',
         inject_point: '#character_open_media_overrides',
         textarea: 'description_textarea',
@@ -20,7 +20,7 @@ const fieldConfigs = [
     },
     {
         field: 'personality',
-        button_name: 'Personalities',
+        button_name: '性格',
         selector: '#personality_div',
         inject_point: '.notes-link',
         textarea: 'personality_textarea',
@@ -28,7 +28,7 @@ const fieldConfigs = [
     },
     {
         field: 'scenario',
-        button_name: 'Scenarios',
+        button_name: '场景',
         selector: '#scenario_div',
         inject_point: '.notes-link',
         textarea: 'scenario_pole',
@@ -36,7 +36,7 @@ const fieldConfigs = [
     },
     {
         field: 'example dialogue',
-        button_name: 'Example Dialogue',
+        button_name: '对话示例',
         selector: '#mes_example_div',
         inject_point: '.editor_maximize',
         textarea: 'mes_example_textarea',
@@ -44,7 +44,7 @@ const fieldConfigs = [
     },
     {
         field: 'main prompt',
-        button_name: 'Main Prompts',
+        button_name: '主提示词',
         selector: '#system_prompt_textarea',
         inject_point: '.editor_maximize',
         textarea: 'system_prompt_textarea',
@@ -52,7 +52,7 @@ const fieldConfigs = [
     },
     {
         field: 'post-history instructions',
-        button_name: 'Post-History Instructions',
+        button_name: '历史后指令',
         selector: '#post_history_instructions_textarea',
         inject_point: '.editor_maximize',
         textarea: 'post_history_instructions_textarea',
@@ -79,10 +79,10 @@ class ContextUtil {
     static getName() {
         const context = SillyTavern.getContext();
         if (context.menuType === 'create') {
-            return context.createCharacterData.name || 'Unknown';
+            return context.createCharacterData.name || '未知角色';
         } else {
             const characterId = ContextUtil.getCharacterId();
-            return context.characters[characterId]?.data?.name || 'Unknown';
+            return context.characters[characterId]?.data?.name || '未知角色';
         }
     }
 
@@ -99,7 +99,7 @@ class ContextUtil {
 
                     // If alternate_description is of old 0.1.0 type String, convert to object {title: String, content: String}
                     if (typeof (desc[0]) === "string") {
-                        desc = desc.map((description, index) => ({ title: `Description #${index + 1}`, content: description }));
+                        desc = desc.map((description, index) => ({ title: `角色描述 #${index + 1}`, content: description }));
 
                     // If alternate_description is of newer 0.2.0 type object, rename 'description' property to 'content'
                     } else if (desc[0].description) {
@@ -205,6 +205,7 @@ function checkFieldStatus(container, field, fieldData) {
         hr.parentNode.insertBefore(statusIndicator, hr.nextSibling);
     }
 
+    statusIndicator.style.display = 'flex';
     if (!hasMatch && currentFieldEntry.trim()) {
         // Current description has been edited
         statusIndicator.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
@@ -212,16 +213,16 @@ function checkFieldStatus(container, field, fieldData) {
         statusIndicator.style.color = '#856404';
         statusIndicator.innerHTML = `
             <i class="fa-solid fa-exclamation-triangle"></i>
-            <span>Current ${field.field} has been modified and doesn't match any saved version.</span>
+            <span>当前${field.button_name}已修改，与所有已保存的版本均不一致。</span>
             <div class="menu_button menu_button_icon" id="save-current-btn" style="margin-left: auto; font-size: 12px; padding: 4px 8px;">
                 <i class="fa-solid fa-save"></i>
-                <span>Save Current</span>
+                <span>保存当前版本</span>
             </div>
         `;
 
         // Add click handler for the save button
         statusIndicator.querySelector('#save-current-btn').addEventListener('click', () => {
-            fieldData.push( {title: `${field.field} #${fieldData.length+1}`, content: currentFieldEntry });
+            fieldData.push( {title: `${field.button_name} #${fieldData.length+1}`, content: currentFieldEntry });
             saveFieldData(field, fieldData);
             updateFieldList(container, field, fieldData);
             checkFieldStatus(container, field, fieldData);
@@ -234,7 +235,7 @@ function checkFieldStatus(container, field, fieldData) {
         statusIndicator.style.color = '#155724';
         statusIndicator.innerHTML = `
             <i class="fa-solid fa-check-circle"></i>
-            <span>Current ${field.field} matches a saved version.</span>
+            <span>当前${field.button_name}与已保存的版本一致。</span>
         `;
     } else {
         // No current description
@@ -259,7 +260,7 @@ function updateActiveIndicators(container, field, fieldData) {
             if (isActive) {
                 entryItem.classList.add('active-field');
                 useBtn.style.opacity = '0.5';
-                useBtn.title = 'Already active';
+                useBtn.title = '当前正在使用';
                 activeIndicator.innerHTML = `<i class="fa-solid fa-check-circle" style="color: #28a745; margin-left: 8px;"></i>`;
             } else {
                 entryItem.classList.remove('active-field');
@@ -276,6 +277,46 @@ function updateActiveIndicators(container, field, fieldData) {
 
 const saveTimeouts = {};
 
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[char]);
+}
+
+function openFieldEditor(textarea, field, title, trigger) {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'alt-field-editor';
+    dialog.setAttribute('aria-label', `放大编辑${field.button_name}`);
+    dialog.innerHTML = `
+        <div class="alt-field-editor-header">
+            <h3 class="margin0"></h3>
+            <button type="button" class="menu_button menu_button_icon alt-field-editor-close" title="关闭放大编辑（Esc）">
+                <i class="fa-solid fa-compress" aria-hidden="true"></i>
+                <span>完成并关闭</span>
+            </button>
+        </div>
+        <p class="alt-field-editor-hint">修改会自动保存到此备用版本；点击“使用”后才会应用到角色。按 Esc 可关闭。</p>
+        <textarea class="text_pole alt-field-editor-textarea"></textarea>
+    `;
+    dialog.querySelector('h3').textContent = `编辑${field.button_name}：${title}`;
+    const editor = dialog.querySelector('textarea');
+    editor.setAttribute('aria-label', `${field.button_name}内容`);
+    editor.value = textarea.value;
+    editor.addEventListener('input', () => {
+        textarea.value = editor.value;
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    dialog.querySelector('button').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+        dialog.remove();
+        trigger.focus();
+    }, { once: true });
+    document.body.appendChild(dialog);
+    dialog.showModal();
+    editor.focus();
+    editor.setSelectionRange(textarea.selectionStart, textarea.selectionEnd);
+}
+
 // Update the descriptions list in the popup
 function updateFieldList(container, field, fieldData) {
     const listContainer = container.querySelector('#field-list');
@@ -284,7 +325,7 @@ function updateFieldList(container, field, fieldData) {
     const getTokenCount = context.getTokenCountAsync;
 
     if (fieldData.length === 0) {
-        listContainer.innerHTML = `<strong>Click <i class="fa-solid fa-plus"></i> to save the current ${field.field}</strong>`;
+        listContainer.innerHTML = `<strong>点击 <i class="fa-solid fa-plus"></i> 保存当前${field.button_name}</strong>`;
         return;
     }
 
@@ -297,23 +338,27 @@ function updateFieldList(container, field, fieldData) {
             <div class="field-item ${activeClass}" data-item-index="${index}" style="margin-bottom: 15px;">
                 <div class="flex-container justifySpaceBetween">
                     <div class="flex-container" style="width: 40%">
-                        <input class="text_pole textarea_compact field-title margin0" data-index="${index}" value="${entry.title}" placeholder="${field.field} title" maxlength="50">
+                        <input class="text_pole textarea_compact field-title margin0" data-index="${index}" value="${escapeHtml(entry.title)}" placeholder="${field.button_name}标题" maxlength="50">
                         <div class="active-indicator">${activeIndicator}</div>
                     </div>
                     <div class="flex-container" style="flex: none;">
-                        <div class="menu_button menu_button_icon use-field-btn" data-index="${index}" ${isActive ? 'style="opacity: 0.5;" title="Already active"' : ''}>
+                        <button type="button" class="menu_button menu_button_icon expand-field-btn" data-index="${index}" title="放大编辑${field.button_name}">
+                            <i class="fa-solid fa-expand" aria-hidden="true"></i>
+                            <span>放大</span>
+                        </button>
+                        <div class="menu_button menu_button_icon use-field-btn" data-index="${index}" ${isActive ? 'style="opacity: 0.5;" title="当前正在使用"' : ''}>
                             <i class="fa-solid fa-arrow-up"></i>
-                            <span>Use</span>
+                            <span>使用</span>
                         </div>
                         <div class="menu_button menu_button_icon delete-field-btn" data-index="${index}">
                             <i class="fa-solid fa-trash"></i>
-                            <span>Delete</span>
+                            <span>删除</span>
                         </div>
                     </div>
                 </div>
-                <textarea class="text_pole textarea_compact field-textarea" rows="8" data-index="${index}" placeholder="${field.field}...">${entry.content}</textarea>
+                <textarea class="text_pole textarea_compact field-textarea" rows="8" data-index="${index}" placeholder="请输入${field.button_name}内容...">${escapeHtml(entry.content)}</textarea>
                 <div class="extension_token_counter" style="text-align: right; margin-top: 5px;">
-                    <span>Tokens:</span> <span data-token-display="${index}">calculating...</span>
+                    <span>词元数：</span> <span data-token-display="${index}">计算中...</span>
                 </div>
             </div>
         `;
@@ -331,6 +376,14 @@ function updateFieldList(container, field, fieldData) {
     });
 
     // Add event listeners
+    listContainer.querySelectorAll('.expand-field-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = Number(btn.dataset.index);
+            const textarea = btn.closest('.field-item').querySelector('.field-textarea');
+            openFieldEditor(textarea, field, fieldData[index].title, btn);
+        });
+    });
+
     listContainer.querySelectorAll('.use-field-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const index = parseInt(e.currentTarget.dataset.index);
@@ -339,7 +392,7 @@ function updateFieldList(container, field, fieldData) {
 
             if (hasUnsavedChanges) {
                 // Show simple confirmation dialog
-                const confirmed = confirm(`Your current ${field.field} has unsaved changes. Switch to this ${field.field} anyway?`);
+                const confirmed = confirm(`当前${field.button_name}有尚未保存为备用版本的修改。仍要切换到此版本吗？`);
 
                 if (confirmed) {
                     ContextUtil.setCurrentField(field, fieldData[index].content);
@@ -359,7 +412,7 @@ function updateFieldList(container, field, fieldData) {
             const index = parseInt(e.currentTarget.dataset.index);
 
             // Show confirmation dialog before deleting
-            const confirmed = confirm(`Are you sure you want to delete ${fieldData[index].title}? This action cannot be undone.`);
+            const confirmed = confirm(`确定要删除“${fieldData[index].title}”吗？此操作无法撤销。`);
 
             if (confirmed) {
                 fieldData.splice(index, 1);
@@ -373,7 +426,8 @@ function updateFieldList(container, field, fieldData) {
     listContainer.querySelectorAll('.field-textarea').forEach(textarea => {
         textarea.addEventListener('input', (e) => {
             const index = parseInt(e.target.dataset.index);
-            fieldData[index].content = e.target.value;  // ← Still immediate
+            const entry = fieldData[index];
+            entry.content = e.target.value;
 
             // Immediate UI update (responsive feel)
             setTimeout(() => updateActiveIndicators(container, field, fieldData), 50);
@@ -385,9 +439,9 @@ function updateFieldList(container, field, fieldData) {
             saveTimeouts[index] = setTimeout(async () => {
                 saveFieldData(field, fieldData);
                 
-                const tokenCount = await getTokenCount(fieldData[index].content);
+                const tokenCount = await getTokenCount(entry.content);
 
-                const tokenDisplay = container.querySelector(`[data-token-display="${index}"]`);
+                const tokenDisplay = container.querySelector(`[data-token-display="${fieldData.indexOf(entry)}"]`);
                 if (tokenDisplay) {
                     tokenDisplay.textContent = tokenCount;
                 }
@@ -449,7 +503,7 @@ function createPopupContent(field) {
 
     // AUTO-SAVE: If this is the first time opening and there's a current description
     if (fieldData.length === 0 && currentFieldEntry.trim()) {
-        fieldData = [{ title: `${field.field} #1`, content: currentFieldEntry }];
+        fieldData = [{ title: `${field.button_name} #1`, content: currentFieldEntry }];
         saveFieldData(field, fieldData);
     }
 
@@ -458,18 +512,18 @@ function createPopupContent(field) {
 
     container.innerHTML = `
         <div class="flex-container justifySpaceBetween alignItemsCenter">
-            <h3 class="margin0">Alternate ${field.button_name} for <span>${characterName}</span></h3>
+            <h3 class="margin0"><span>${escapeHtml(characterName)}</span>的备用${field.button_name}</h3>
             <div id="add-field-btn" class="menu_button menu_button_icon">
                 <i class="fa-solid fa-plus"></i>
-                <span>Add New</span>
+                <span>新增版本</span>
             </div>
         </div>
         <hr>
         <div class="justifyLeft">
             <small>
-                Save different versions of your character's ${field.field}. Click "Use" to switch the active ${field.field} in the editor.
+                保存角色${field.button_name}的不同版本。点击“使用”可将对应版本应用到角色编辑器，点击“放大”可在大窗口中编辑。修改会自动保存到备用版本。
                 ${fieldData.length === 1 && fieldData[0].content === currentFieldEntry ?
-            `<br><strong>💾 Your original ${field.field} has been automatically saved!</strong>` : ''
+            `<br><strong>原始${field.button_name}已自动保存为备用版本！</strong>` : ''
         }
             </small>
         </div>
@@ -480,7 +534,7 @@ function createPopupContent(field) {
     // Add event listener for "Add New" button with duplicate check
     container.querySelector(`#add-field-btn`).addEventListener('click', () => {
         currentFieldEntry = ContextUtil.getCurrentField(field);
-        fieldData.push(currentFieldEntry ? { title: `${field.field} #${fieldData.length + 1}`, content: currentFieldEntry } : { title: `${field.field} #${fieldData.length+1}`, content: ''});
+        fieldData.push({ title: `${field.button_name} #${fieldData.length + 1}`, content: currentFieldEntry || '' });
         saveFieldData(field, fieldData);
         updateFieldList(container, field, fieldData);
     });
@@ -498,14 +552,14 @@ function createPopupContent(field) {
 function createButton(field) {
     const button = document.createElement('div');
     button.className = `menu_button menu_button_icon alt_${field.saveKey}_button alt_fields_button`;
-    button.title = `Manage alternate ${field.field}s`;
-    button.innerHTML = `<i class="fa-solid fa-bars-staggered"></i><span>Alt. ${field.button_name}</span>`;
+    button.title = `管理备用${field.button_name}`;
+    button.innerHTML = `<i class="fa-solid fa-bars-staggered"></i><span>备用${field.button_name}</span>`;
 
     // Handle button click - open the popup
     button.addEventListener('click', () => {
         const context = SillyTavern.getContext();
         const popupContent = createPopupContent(field);
-        context.callPopup(popupContent, 'text', '', { wide: true, large: true });
+        context.callPopup(popupContent, 'text', '', { wide: true, large: true, okButton: '关闭' });
     });
 
     return button;
@@ -596,24 +650,24 @@ function registerSlashCommand() {
         callback: altFieldCallback,
         helpString: `
         <div>
-        Switch to an alternate field entry. Must have a character selected.
+        切换到一个已保存的备用设定版本。使用前必须先选择角色。省略 name 参数时将随机选择一个版本。
         </div>
         <div>
-        <strong style="color: rgb(255, 193, 7)">WARNING:</strong> Will overwrite current field without saving it.   
+        <strong style="color: rgb(255, 193, 7)">警告：</strong>此命令会覆盖当前设定，且不会保存被覆盖的内容。
         </div>
         <div>
-            <strong>Example:</strong>
+            <strong>示例：</strong>
             <ul>
                 <li>
-                    <pre><code>/altfield field=description name="Description #1"</code></pre>
-                    Changes the description field to the alternate entry titled "Description #1"
+                    <pre><code>/altfield field=description name="角色描述 #1"</code></pre>
+                    将角色描述切换为标题为“角色描述 #1”的备用版本。
                 </li>
             </ul>
         </div>`,
         namedArgumentList: [
             SlashCommandNamedArgument.fromProps({
                 name: 'field',
-                description: 'Field type to switch (description, personality, etc.)',
+                description: '要切换的设定类型（description 为角色描述，personality 为性格等，参数值保持英文）',
                 typeList: [ARGUMENT_TYPE.STRING],
                 isRequired: true,
                 enumProvider: fieldEnumProvider,
@@ -621,7 +675,7 @@ function registerSlashCommand() {
             }),
             SlashCommandNamedArgument.fromProps({
                 name: 'name',
-                description: 'The name of the saved alternate to switch to',
+                description: '要使用的备用版本标题（留空则随机选择）',
                 typeList: [ARGUMENT_TYPE.STRING],
                 enumProvider: fieldNameEnumProvider
             })
@@ -638,14 +692,14 @@ function altFieldCallback(namedArguments) {
         // Get field config for field arg. Return error if field is invalid.
         const fieldConfig = fieldConfigs.find(f => f.field === field);
         if (!fieldConfig) {
-            return `Error: Unknown field "${field}". Available fields: ${fieldConfigs.map(f => f.field).join(', ')}`;
+            return `错误：未知的设定类型“${field}”。可用类型：${fieldConfigs.map(f => `${f.field}（${f.button_name}）`).join('、')}`;
         }
 
         // Get the field data. Return empty string if no entries found
         const fieldData = ContextUtil.getFieldData(fieldConfig);
 
         if (fieldData.length === 0) {
-            return `Error: No field enteries found for ${field}`;
+            return `错误：${fieldConfig.button_name}尚未保存任何备用版本。`;
         }
 
         let alternate;
@@ -655,7 +709,7 @@ function altFieldCallback(namedArguments) {
             alternate = fieldData.find(entry => entry.title === name);
             if (!alternate) {
                 const availableNames = fieldData.map(entry => entry.title);
-                return `Error: No alternate named "${name}" found for ${field}. Available: ${availableNames.join(', ')}`;
+                return `错误：${fieldConfig.button_name}中找不到名为“${name}”的备用版本。可用版本：${availableNames.join('、')}`;
             }
         } else {
             // If name is blank, choose a random alternate
@@ -671,7 +725,7 @@ function altFieldCallback(namedArguments) {
 
     } catch (error) {
         console.error('Error in altfield command:', error);
-        return `Error: ${error.message}`;
+        return `错误：${error.message}`;
     }
 }
 
