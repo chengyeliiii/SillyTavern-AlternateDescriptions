@@ -506,7 +506,7 @@ function createPopupContent(field) {
     }
 
     const container = document.createElement('div');
-    container.className = 'flex-container flexFlowColumn';  
+    container.className = 'flex-container flexFlowColumn alt-fields-popup-content';
 
     container.innerHTML = `
         <div class="flex-container justifySpaceBetween alignItemsCenter">

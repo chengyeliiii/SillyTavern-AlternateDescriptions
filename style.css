@@ -6,6 +6,15 @@
     opacity: 0.8;
 }
 
+/* Keep the Chinese close label on one horizontal line in this popup. */
+#dialogue_popup:has(.alt-fields-popup-content) #dialogue_popup_ok,
+#dialogue_popup:has(.alt-fields-popup-content) .popup-button-ok {
+    min-width: 4em;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+    word-break: keep-all;
+}
+
 .active-field .field-textarea {
     border-color: #28a745;
 }
