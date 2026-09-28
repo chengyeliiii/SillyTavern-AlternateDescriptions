@@ -1,79 +1,22 @@
-# SillyTavern Alternate Fields
-*Formerly "Alternate Descriptions"*
+# Avatar Display Crop
 
-## Overview
+SillyTavern third-party extension that stores avatar display crop settings separately from the character card image.
 
-A SillyTavern extension that allows you to save and manage multiple versions of character fields within a single character card. Perfect for experimenting with different character concepts without losing your original work.
+## Intended behavior
 
-**Supported Fields**: Description, Personality, Scenario, Example Dialogue, Main Prompt, Post-History Instructions
-
-## Features
-
-- **Multi-field support** - Works with 6 different character fields
-- **Auto-save** - Automatically saves current field content on first use
-- **Visual indicators** - Shows which alternate is currently active & warns before switching with unsaved changes
-- **Token counting** - Shows token count for each alternate
-- **Slash command support** - Switch alternates via `/altfield` command
-- **Portable** - Data stored in character card, stays with character
+- The uploaded character avatar remains the original image for character-card export.
+- A crop can be selected for the character editor preview.
+- The crop parameters are saved under `data.extensions.avatar_display_crop`.
+- The `裁剪显示` button opens the crop dialog for the current avatar.
 
 ## Installation
 
-1. Open SillyTavern
-2. Go to **Extensions** → **Install extension**  
-3. Enter the repository URL: `https://github.com/nbrown725/SillyTavern-AlternateDescriptions`
-4. Click **Download**
-5. The extension will add "Alt. [Field]" buttons above supported fields
+Install this repository as a third-party extension from the SillyTavern Extensions panel, or copy the repository folder to:
 
-## Usage
-
-### Basic Usage
-1. **Open the manager**: Click the "Alt. [Field]" button above any supported field in the character editor
-2. **Add new alternates**: Click the "Add New" button to create a new alternate (duplicates current content)
-3. **Switch alternates**: Click the "Use" button to switch to a different alternate
-4. **Edit alternates**: Modify titles and content directly in the popup
-
-### Slash Command Usage
-
-The `/altfield` command allows quick switching between alternates:
-
-```
-/altfield field=<field_name> name=<alternate_name>
+```text
+public/scripts/extensions/third-party/avatar-display-crop
 ```
 
-**Arguments:**
-- `field` - The field type (description, personality, scenario, etc.) - **Required**
-- `name` - The name of the alternate to switch to - **Optional**
+## Current scope
 
-**Examples:**
-```
-# Switch to specific alternate
-/altfield field=description name="Description #1"
-
-# Switch to random alternate (omit name)
-/altfield field=scenario
-```
-
-Both arguments support autocomplete - the `field` argument must be specified for the `name` argument to autocomplete.
-
-## ⚠ Important Notes
-
-- **Manual saving required**: The extension doesn't auto-save changes when switching alternates
-- **Warning system**: Visual alerts and confirmation dialogs protect against losing unsaved work
-- **Overwrites current content**: Switching alternates will replace current field content
-
-## Data Storage
-
-Alternate fields are stored in the character card under:
-```
-extensions.alternate_fields.[field_saveKey]
-```
-
-This means data travels with the character card when shared. Delete fields you don't want others seeing before sharing.
-
-## Acknowledgements
-
-This extension is based on patterns from the [Group Greetings extension](https://github.com/SillyTavern/Extension-GroupGreetings) by the SillyTavern team.
-
-## License
-
-Licensed under AGPLv3
+This initial version targets the character editor preview and upload flow. Full application of the saved crop to every avatar rendered in chat and character lists requires a shared avatar-rendering hook in the SillyTavern version being used.

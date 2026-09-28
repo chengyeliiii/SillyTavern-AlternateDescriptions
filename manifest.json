@@ -1,12 +1,14 @@
 {
-    "display_name": "Alternate Fields",
-    "loading_order": 10,
+    "display_name": "Avatar Display Crop",
+    "loading_order": 20,
     "requires": [],
     "optional": [],
     "js": "index.js",
     "css": "style.css",
-    "author": "Nbrown725",
-    "version": "1.2.0",
-    "homePage": "https://github.com/nbrown725/SillyTavern-AlternateDescriptions",
-    "auto_update": true
+    "author": "",
+    "version": "0.1.0",
+    "homePage": "",
+    "hooks": {
+        "activate": "init"
+    }
 }
