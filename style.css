@@ -6,10 +6,112 @@
     opacity: 0.8;
 }
 
+/* Keep the Chinese close label on one horizontal line in this popup. */
+#dialogue_popup:has(.alt-fields-popup-content) #dialogue_popup_ok,
+#dialogue_popup:has(.alt-fields-popup-content) .popup-button-ok {
+    min-width: 4em;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+    word-break: keep-all;
+}
+
 .active-field .field-textarea {
     border-color: #28a745;
 }
 
 .field-title {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+}
+
+.field-title-group {
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.field-title-group .active-indicator {
+    flex: 0 0 24px;
+    width: 24px;
+    text-align: center;
+}
+
+.field-title-group .active-indicator i {
+    margin-left: 0 !important;
+}
+
+.field-item .field-textarea {
+    resize: vertical;
+    min-height: 8em;
+}
+
+dialog.alt-field-editor {
+    box-sizing: border-box;
+    width: 96vw;
+    max-width: 1400px;
+    height: 92vh;
+    height: 92dvh;
+    max-height: 96vh;
+    max-height: 96dvh;
+    margin: auto;
+    padding: 16px;
+    color: var(--SmartThemeBodyColor, #eee);
+    background: var(--SmartThemeBlurTintColor, #252525);
+    border: 1px solid var(--SmartThemeBorderColor, #666);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+dialog.alt-field-editor[open] {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.alt-field-editor::backdrop {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+.alt-field-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.alt-field-editor-header h3 {
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.alt-field-editor-close {
+    flex-shrink: 0;
+}
+
+.alt-field-editor-hint {
+    margin: 0;
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+.alt-field-editor .alt-field-editor-textarea {
     flex: 1;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    resize: none;
+    box-sizing: border-box;
+    line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+    dialog.alt-field-editor {
+        padding: 10px;
+    }
+
+    .field-item > .flex-container > .flex-container {
+        flex-wrap: wrap;
+        max-width: 100%;
+    }
 }
